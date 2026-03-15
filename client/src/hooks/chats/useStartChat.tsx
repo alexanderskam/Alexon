@@ -3,8 +3,9 @@ import ChatService from '../../services/chatService';
 import { toast } from 'react-toastify';
 import type { AxiosError } from 'axios';
 import { useNavigate } from 'react-router';
+import type { Socket } from 'socket.io-client';
 
-const useStartChat = () => {
+const useStartChat = (socketRef: React.RefObject<Socket | null> | null) => {
     const navigate = useNavigate();
     return useMutation<
         { _id: string; users: string[] },
@@ -23,6 +24,7 @@ const useStartChat = () => {
             });
         },
         onSuccess: (data) => {
+            if (socketRef) socketRef.current?.emit('chat-started', data._id);
             toast.dismiss('start-chat');
             navigate(`/chats/${data._id}`);
         },

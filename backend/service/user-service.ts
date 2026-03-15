@@ -6,6 +6,8 @@ import tokenService from './token-service.js';
 import ApiError from '../exceptions/api-errors.js';
 import { Token } from '../models/token-model.js';
 import type { Types } from 'mongoose';
+import { Chat } from '../models/chat-model.js';
+import { Message } from '../models/message-model.js';
 
 class UserService {
     async registration(username: string, email: string, password: string) {
@@ -38,6 +40,15 @@ class UserService {
                 isActivated: false,
             },
         };
+    }
+    async sendActivationMail(userId: string) {
+        const user = await User.findById(userId);
+        if (!user) throw ApiError.BadRequest('Пользователь не найден');
+        const { email, activationLink } = user;
+        await mailService.sendActivationMail(
+            email,
+            `${process.env.API_URL}/api/activate/${activationLink}`,
+        );
     }
     async activate(activationLink: string) {
         const user = await User.findOne({ activationLink });
@@ -130,6 +141,21 @@ class UserService {
         }
 
         return foundUsers.map((user) => user._id);
+    }
+    async deleteUser(userId: string) {
+        try {
+            await User.findByIdAndDelete(userId);
+            const chats = await Chat.find({ users: userId });
+            await Chat.deleteMany({ users: userId });
+            if (chats.length === 0) return;
+            for (let i = 0; i < chats.length; i++) {
+                const chatId = chats[i]?._id;
+                if (!chatId) continue;
+                await Message.deleteMany({ chatId: chatId });
+            }
+        } catch (error) {
+            throw ApiError.BadRequest('Что-то пошло не так в попытке удаления');
+        }
     }
 }
 

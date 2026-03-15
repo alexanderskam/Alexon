@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { FiMessageCircle } from 'react-icons/fi';
 import useUsers from '../../hooks/users/useUsers';
 import useStartChat from '../../hooks/chats/useStartChat';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { ToastContainer } from 'react-toastify';
+import { SocketContext } from '../../context/SocketContext';
 
 const Users = () => {
     const [username, setUsername] = useState<string>('');
@@ -18,7 +19,8 @@ const Users = () => {
     const userEmail = useSelector(
         (state: RootState) => state.userReducer.email,
     );
-    const startChatMutation = useStartChat();
+    const socketRef = useContext(SocketContext);
+    const startChatMutation = useStartChat(socketRef);
     return (
         <div className="bg-blue-300 h-19/20 flex items-center justify-center flex-col">
             <div className="bg-[#2a2f3a] text-white h-9/10 w-5/10 border border-transparent rounded-2xl p-3 flex flex-col items-center">

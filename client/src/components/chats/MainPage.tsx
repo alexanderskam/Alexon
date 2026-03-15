@@ -1,10 +1,12 @@
 import { useNavigate, useParams } from 'react-router';
 import useUsersChats from '../../hooks/chats/useUsersChats';
-import type { FC } from 'react';
+import { useContext, type FC } from 'react';
 import { GoPlus } from 'react-icons/go';
-import useWebsocket from '../../hooks/chats/useWebsocket';
+// import useWebsocket from '../../hooks/chats/useWebsocket';
 import Chat from './Chat';
 import ChatSelector from './ChatSelector';
+import { SocketContext } from '../../context/SocketContext';
+import useChatWebsocket from '../../hooks/chats/socket/useChatWebsocket';
 
 interface IProps {
     withChat: boolean;
@@ -15,7 +17,8 @@ const MainPage: FC<IProps> = ({ ...props }) => {
     const navigate = useNavigate();
     const params = useParams();
     const { withChat } = props;
-    const socket = useWebsocket();
+    const globalSocketRef = useContext(SocketContext);
+    const socket = useChatWebsocket(globalSocketRef);
     return (
         <div className="flex h-19/20">
             <div className="flex items-center flex-col w-2/8 border-r border-gray-300 overflow-y-auto bg-[#2a2f3a] text-white">

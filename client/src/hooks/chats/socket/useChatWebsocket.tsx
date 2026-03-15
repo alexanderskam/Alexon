@@ -1,89 +1,91 @@
-import axios from 'axios';
-import type { IMessage } from '../../types/chat';
-import { useEffect, useRef, useState, type ChangeEventHandler } from 'react';
-import { io, Socket } from 'socket.io-client';
-import type { RootState } from '../../store/store';
+import type { IMessage } from '../../../types/chat';
+import { useEffect, useState, type ChangeEventHandler } from 'react';
+import { Socket } from 'socket.io-client';
+import type { RootState } from '../../../store/store';
 import { useNavigate, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
-import type { ILoginResponse } from '../../types/authResponse';
 import { toast } from 'react-toastify';
 import { useQueryClient } from '@tanstack/react-query';
+import type { DefaultEventsMap } from '@socket.io/component-emitter';
 
-const useWebsocket = () => {
+const useChatWebsocket = (
+    socketRef: React.RefObject<Socket<
+        DefaultEventsMap,
+        DefaultEventsMap
+    > | null> | null,
+) => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const params = useParams<{
         id: string;
         friend: string;
     }>();
-    const socketRef = useRef<Socket | null>(null);
     const [value, setValue] = useState<string>('');
     const [messages, setMessages] = useState<IMessage[]>([]);
     const [isTyping, setIsTyping] = useState<boolean>(false);
     const [onlineList, setOnlineList] = useState<string[]>([]);
     const [usersWithUnchecked, setUsersWithUnchecked] = useState<string[]>([]);
     const userId = useSelector((state: RootState) => state.userReducer._id);
-    const [connectState, setConnectState] = useState<boolean>(false);
 
     useEffect(() => {
-        const socket = io('http://localhost:3000', {
-            withCredentials: true,
-            auth: {
-                accessToken: `Bearer ${localStorage.getItem('token')}`,
-            },
-        });
-
-        socketRef.current = socket;
-
-        socket.on('connect', () => {
-            setConnectState(true);
-        });
-
-        socket.on('connect_error', async (err) => {
-            if (err.message === 'Unauthorized') {
-                try {
-                    const response = await axios.get<ILoginResponse>(
-                        'http://localhost:3000/api/refresh',
-                        { withCredentials: true },
-                    );
-                    localStorage.setItem('token', response.data.accessToken);
-                    socket.auth = {
-                        accessToken: `Bearer ${response.data.accessToken}`,
-                    };
-                    socket.connect();
-                } catch {
-                    console.log('refresh failed');
-                }
-            }
-        });
+        if (!socketRef) {
+            console.log('no socket ref');
+            return;
+        }
+        const socket = socketRef.current;
+        if (!socket) return;
 
         socket.on('online-list', (users: string[]) => {
             setOnlineList(users);
         });
 
         socket.on('unchecked-messages', (unchecked: string[]) => {
-            console.log('unchecked: ', unchecked);
             setUsersWithUnchecked(unchecked);
         });
 
+        socket.on('chat-started', () => {
+            console.log('chat started');
+            queryClient.invalidateQueries({ queryKey: ['chats'] });
+        });
+
+        socket.emit('get-first-info');
+
         return () => {
-            console.log('disconnect');
-            socket.disconnect();
+            socket.off('online-list');
+            socket.off('unchecked-messages');
+            socket.off('chat-started');
         };
-    }, []);
+    }, [socketRef, queryClient]);
 
     useEffect(() => {
+        if (!socketRef) {
+            console.log('no socket ref');
+            return;
+        }
         const socket = socketRef.current;
-        if (!socket || !params.id) return;
-        console.log('PARAM: ', params.id);
+        if (!socket) return;
 
-        socket.on('connect', () => {
-            //КОСТЫЫЫЛЬ
-            setTimeout(() => {
-                console.log('connected, joining room', params.id);
-                socket.emit('join-room', params.id);
-            }, 370);
+        socket.off('chat-deleted');
+
+        socket.on('chat-deleted', (chatId: string) => {
+            console.log('deleting chat: ' + params.id + ' ' + chatId);
+            if (params.id) {
+                if (params.id == chatId) {
+                    navigate('/chats');
+                }
+            }
+            queryClient.invalidateQueries({ queryKey: ['chats'] });
         });
+
+        if (!params.id) return;
+
+        if (socket.connected) {
+            socket.emit('join-room', params.id);
+        } else {
+            socket.once('connect', () => {
+                socket.emit('join-room', params.id);
+            });
+        }
 
         socket.on('message', (message: IMessage) => {
             if (message.chatId !== params.id) return;
@@ -113,7 +115,6 @@ const useWebsocket = () => {
         });
 
         socket.on('check-message', (messageId) => {
-            console.log('check-message');
             setMessages((prev) =>
                 prev.map((message) => {
                     return message._id === messageId
@@ -123,17 +124,10 @@ const useWebsocket = () => {
             );
         });
 
-        socket.on('chat-deleted', (chatId: string) => {
-            console.log(params.id + ' ' + chatId);
-            if (params.id == chatId) navigate('/chats');
-            queryClient.invalidateQueries({ queryKey: ['chats'] });
-        });
-
-        console.log('connected, joining room', params.id);
-        socket.emit('join-room', params.id);
-
         return () => {
             socket.emit('leave-room');
+            setMessages([]);
+            socket.off('chat-deleted');
             socket.off('connect');
             socket.off('message');
             socket.off('delete-message');
@@ -142,11 +136,14 @@ const useWebsocket = () => {
             socket.off('typing');
             socket.off('stop-typing');
             socket.off('check-message');
-            socket.off('chat-deleted');
         };
-    }, [params.id, connectState, navigate, queryClient]);
+    }, [params.id, navigate, queryClient, socketRef]);
 
     const sendMessage = () => {
+        if (!socketRef) {
+            console.log('no socket ref');
+            return;
+        }
         socketRef.current?.emit('message', {
             roomId: params.id,
             message: {
@@ -159,6 +156,10 @@ const useWebsocket = () => {
     };
 
     const deleteMessage = (id: string) => {
+        if (!socketRef) {
+            console.log('no socket ref');
+            return;
+        }
         socketRef.current?.emit('delete-message', {
             roomId: params.id,
             id: id,
@@ -166,11 +167,19 @@ const useWebsocket = () => {
     };
 
     const changeHandler: ChangeEventHandler<HTMLInputElement> = (e) => {
+        if (!socketRef) {
+            console.log('no socket ref');
+            return;
+        }
         socketRef.current?.emit('typing', params.id);
         setValue(e.target.value);
     };
 
     const checkMessageHandler = (id: string) => {
+        if (!socketRef) {
+            console.log('no socket ref');
+            return;
+        }
         socketRef.current?.emit('check-message', {
             roomId: params.id,
             messageId: id,
@@ -178,6 +187,10 @@ const useWebsocket = () => {
     };
 
     const handleChatDeleting = (chatId: string) => {
+        if (!socketRef) {
+            console.log('no socket ref');
+            return;
+        }
         socketRef.current?.emit('chat-deleted', chatId);
     };
 
@@ -196,4 +209,4 @@ const useWebsocket = () => {
     };
 };
 
-export default useWebsocket;
+export default useChatWebsocket;

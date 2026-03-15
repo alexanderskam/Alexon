@@ -23,4 +23,13 @@ export class UserService {
             throw error;
         }
     }
+
+    static async deleteUser(data: { userId: string }): Promise<void> {
+        try {
+            await api.post('/deleteUser', data);
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
 }

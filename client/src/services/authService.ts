@@ -41,4 +41,13 @@ export default class AuthService {
             throw error;
         }
     }
+
+    static async confirmProfile(data: { userId: string }): Promise<void> {
+        try {
+            await api.post('sendActivationMail', data);
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
 }

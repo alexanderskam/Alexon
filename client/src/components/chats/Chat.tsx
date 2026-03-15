@@ -1,12 +1,12 @@
 import Input from '../../UI/Input';
 import Button from '../../UI/Button';
 import Message from './Message';
-import useWebsocket from '../../hooks/chats/useWebsocket';
+import useChatWebsocket from '../../hooks/chats/socket/useChatWebsocket';
 import { useEffect, useRef, type FC } from 'react';
 import { ToastContainer } from 'react-toastify';
 import typing from '../../assets/3-dots-move.svg';
 
-type IProps = ReturnType<typeof useWebsocket>;
+type IProps = ReturnType<typeof useChatWebsocket>;
 
 const Chat1: FC<IProps> = ({ ...props }) => {
     const {

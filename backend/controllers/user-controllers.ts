@@ -148,6 +148,34 @@ class UserControllers {
         const user = await userService.checkAuth(refreshToken);
         res.status(200).json({ user });
     }
+
+    async sendActivationMail(
+        req: Request<{}, {}, { userId: string }, {}>,
+        res: Response,
+        next: NextFunction,
+    ) {
+        try {
+            const userId = req.body.userId;
+            await userService.sendActivationMail(userId);
+            res.status(200).json({ message: 'success' });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async deleteUser(
+        req: Request<{}, {}, { userId: string }, {}>,
+        res: Response,
+        next: NextFunction,
+    ) {
+        try {
+            const userId = req.body.userId;
+            await userService.deleteUser(userId);
+            res.status(200).json({ message: 'success' });
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default new UserControllers();
