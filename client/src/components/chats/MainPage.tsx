@@ -50,7 +50,15 @@ const MainPage: FC<IProps> = ({ ...props }) => {
                 </div>
             </div>
             <div className="flex-1 overflow-y-auto bg-blue-300">
-                {withChat ? <Chat {...socket} /> : <p>Откройте чат</p>}
+                {withChat ? (
+                    <Chat {...socket} />
+                ) : (
+                    <p className="w-full text-center mt-4">
+                        <strong className="text-2xl cursor-default text-gray-700">
+                            Откройте чат
+                        </strong>
+                    </p>
+                )}
             </div>
         </div>
     );

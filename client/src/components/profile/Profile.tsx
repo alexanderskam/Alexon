@@ -24,12 +24,18 @@ const Profile = () => {
                 <div className="w-20 h-20 rounded-full bg-[#2f4e83] flex items-center justify-center text-white font-medium">
                     {user.username.charAt(0)}
                 </div>
-                <p className="w-full text-2xl mb-5">{user.username}</p>
-                <strong className="w-full text-2xl">{user.email}</strong>
+                <div className="flex justify-between w-full mt-4">
+                    <p className="text-2xl mb-5">{user.username}</p>
+                    <strong className="text-2xl">{user.email}</strong>
+                </div>
                 <div className="w-full flex items-center">
                     <p className=" text-2xl">{`Ваш профиль ${user.isActivated ? '' : 'не'} активирован`}</p>
                     {!user.isActivated ? (
-                        <Button onClick={handleConfirm} className="ml-auto">
+                        <Button
+                            disabled={confirmMutation.isPending}
+                            onClick={handleConfirm}
+                            className="ml-auto"
+                        >
                             Активировать
                         </Button>
                     ) : (

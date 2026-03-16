@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { ToastContainer } from 'react-toastify';
 import { SocketContext } from '../../context/SocketContext';
+import useUsersWebsocket from '../../hooks/chats/socket/useUsersWebsocket';
 
 const Users = () => {
     const [username, setUsername] = useState<string>('');
@@ -21,6 +22,7 @@ const Users = () => {
     );
     const socketRef = useContext(SocketContext);
     const startChatMutation = useStartChat(socketRef);
+    useUsersWebsocket(socketRef);
     return (
         <div className="bg-blue-300 h-19/20 flex items-center justify-center flex-col">
             <div className="bg-[#2a2f3a] text-white h-9/10 w-5/10 border border-transparent rounded-2xl p-3 flex flex-col items-center">
@@ -33,7 +35,7 @@ const Users = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="Поиск..."
                     />
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none cursor-default">
                         <div className="w-px h-5 bg-white/30"></div>
                         <span className="text-white/60 text-sm whitespace-nowrap">
                             Username
@@ -71,16 +73,20 @@ const Users = () => {
                                     className={`mb-2 flex justify-between items-center w-11/12 ${isPlaceholderData ? 'opacity-50' : 'opacity-100'}`}
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-[#2f4e83] flex items-center justify-center text-white font-medium">
+                                        <div className="w-10 h-10 rounded-full bg-[#2f4e83] flex items-center justify-center text-white font-medium cursor-default">
                                             {user.username.charAt(0)}
                                         </div>
-                                        <strong>{user.username}</strong>
+                                        <strong className="cursor-default">
+                                            {user.username}
+                                        </strong>
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <p>{user.email}</p>
                                         <FiMessageCircle
-                                            className="w-6 h-6 cursor-pointer"
+                                            className={`w-6 h-6 cursor-pointer ${startChatMutation.isPending ? 'text-gray-600' : ''}`}
                                             onClick={() => {
+                                                if (startChatMutation.isPending)
+                                                    return;
                                                 startChatMutation.mutate({
                                                     users: [
                                                         userEmail,
@@ -95,7 +101,7 @@ const Users = () => {
                         })}
                     {!isLoading && !error && data && data.length > 0 && (
                         <h1
-                            className="cursor-pointer text-blue-700"
+                            className="cursor-pointer text-blue-600 mt-2 mb-4"
                             onClick={() => setUsersAmount(usersAmount + 20)}
                         >
                             Загрузить ещё

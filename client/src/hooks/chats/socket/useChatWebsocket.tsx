@@ -70,6 +70,7 @@ const useChatWebsocket = (
         socket.on('chat-deleted', (chatId: string) => {
             console.log('deleting chat: ' + params.id + ' ' + chatId);
             if (params.id) {
+                console.log('IDS: ' + params.id + ' ' + chatId);
                 if (params.id == chatId) {
                     navigate('/chats');
                 }

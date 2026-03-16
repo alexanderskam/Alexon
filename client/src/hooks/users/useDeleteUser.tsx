@@ -22,6 +22,7 @@ const useDeleteUser = (
         const socket = socketRef.current;
         if (!socket) return;
         socket.on('user-deleted', () => {
+            console.log('user deleted');
             queryClient.clear();
             dispatch(
                 setUser({
