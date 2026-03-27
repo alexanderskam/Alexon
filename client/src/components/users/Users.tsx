@@ -7,14 +7,17 @@ import type { RootState } from '../../store/store';
 import { ToastContainer } from 'react-toastify';
 import { SocketContext } from '../../context/SocketContext';
 import useUsersWebsocket from '../../hooks/chats/socket/useUsersWebsocket';
+import { useDebounce } from '../../hooks/users/useDebounce';
 
 const Users = () => {
     const [username, setUsername] = useState<string>('');
     const [email, setEmail] = useState<string>('');
     const [usersAmount, setUsersAmount] = useState<number>(50);
+    const debouncedUsername = useDebounce(username, 300);
+    const debouncedEmail = useDebounce(email, 300);
     const { data, isLoading, isPlaceholderData, error } = useUsers(
-        username,
-        email,
+        debouncedUsername,
+        debouncedEmail,
         usersAmount,
     );
     const userEmail = useSelector(
