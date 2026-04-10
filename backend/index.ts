@@ -12,9 +12,7 @@ import { initSocket } from './socket/socket.js';
 try {
     const PORT = process.env.PORT || 8000;
     const DB_URL = process.env.DB_URL || '';
-    const CLIENT_URL = process.env.CLIENT_URL || '';
-
-    console.log(DB_URL);
+    const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
     const app = express();
     const httpServer = createServer(app);
@@ -24,7 +22,7 @@ try {
     app.use(cookieParser());
     app.use(
         cors({
-            origin: CLIENT_URL,
+            origin: [CLIENT_URL, 'http://localhost:5173'],
             credentials: true,
         }),
     );

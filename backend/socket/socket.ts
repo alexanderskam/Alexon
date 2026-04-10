@@ -25,7 +25,7 @@ export const initSocket = (
 
     const io = new Server(httpServer, {
         cors: {
-            origin: clientUrl,
+            origin: [clientUrl, 'http://localhost:5173'],
             credentials: true,
         },
     });
