@@ -8,6 +8,7 @@ const useGlobalWebsocket = () => {
 
     useEffect(() => {
         const socket = io('http://localhost:3000', {
+            //https://alexon.onrender.com
             withCredentials: true,
             auth: {
                 accessToken: `Bearer ${localStorage.getItem('token')}`,

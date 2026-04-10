@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import type { ILoginResponse } from '../types/authResponse';
 
-export const API_URL = 'http://localhost:3000/api';
+export const API_URL = 'http://localhost:3000/api'; //https://alexon.onrender.com
 
 const api = axios.create({
     withCredentials: true,

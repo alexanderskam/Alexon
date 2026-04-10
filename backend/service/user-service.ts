@@ -125,7 +125,9 @@ class UserService {
         return users;
     }
     async checkAuth(refreshToken: string) {
+        console.log('CHECK: ', refreshToken);
         const tokenData = await Token.findOne({ refreshToken });
+        console.log('CHECK: ', tokenData);
         if (tokenData) {
             const user = User.findById(tokenData.user);
             return user;
