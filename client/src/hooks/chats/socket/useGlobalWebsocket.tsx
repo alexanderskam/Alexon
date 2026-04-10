@@ -7,8 +7,9 @@ const useGlobalWebsocket = () => {
     const socketRef = useRef<Socket | null>(null);
 
     useEffect(() => {
-        const socket = io('http://localhost:3000', {
+        const socket = io('https://alexon.onrender.com', {
             //https://alexon.onrender.com
+            //http://localhost:3000
             withCredentials: true,
             auth: {
                 accessToken: `Bearer ${localStorage.getItem('token')}`,
@@ -25,7 +26,7 @@ const useGlobalWebsocket = () => {
             if (err.message === 'Unauthorized') {
                 try {
                     const response = await axios.get<ILoginResponse>(
-                        'http://localhost:3000/api/refresh',
+                        'https://alexon.onrender.com/api/refresh',
                         { withCredentials: true },
                     );
                     localStorage.setItem('token', response.data.accessToken);
