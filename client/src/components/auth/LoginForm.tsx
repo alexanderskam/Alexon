@@ -29,7 +29,7 @@ const LoginForm: FC = () => {
     };
     return (
         <div className="bg-blue-300 h-full flex items-center justify-center flex-col">
-            <div className="flex w-1/2 h-1/2 flex-col items-end">
+            <div className="flex w-full sm:w-1/2 p-2 h-1/2 flex-col items-end ">
                 <Input
                     placeholder="Введите электронную почту"
                     type="email"

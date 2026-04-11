@@ -24,6 +24,7 @@ interface IProps {
         usersWithUnchecked: string[];
         handleChatDeleting: (chatId: string) => void;
     };
+    onClickMobileClose: () => void;
     params: Readonly<Params<string>>;
 }
 
@@ -44,7 +45,10 @@ const ChatSelector: FC<IProps> = ({ ...props }) => {
     };
     return (
         <div
-            onClick={() => handleMoveOtherChat(element.chat)}
+            onClick={() => {
+                handleMoveOtherChat(element.chat);
+                props.onClickMobileClose();
+            }}
             className={`flex text-gray-300 cursor-pointer justify-between items-center w-full ${isPlaceholderData ? 'opacity-50' : 'opacity-100'} hover:bg-gray-700 hover:shadow-md transition-colors duration-200 rounded-md ${params.id == element.chat ? 'bg-white/5' : ''}`}
             onContextMenu={(e) => {
                 e.preventDefault();

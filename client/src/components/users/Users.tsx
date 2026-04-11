@@ -27,8 +27,8 @@ const Users = () => {
     const startChatMutation = useStartChat(socketRef);
     useUsersWebsocket(socketRef);
     return (
-        <div className="bg-blue-300 h-19/20 flex items-center justify-center flex-col">
-            <div className="bg-[#2a2f3a] text-white h-9/10 w-5/10 border border-transparent rounded-2xl p-3 flex flex-col items-center">
+        <div className="bg-blue-300 p-2 h-19/20 flex items-center justify-center flex-col">
+            <div className="bg-[#2a2f3a] text-white h-[90vh] w-full sm:w-1/2 border border-transparent rounded-2xl p-3 flex flex-col items-center">
                 <div className="relative w-full">
                     <input
                         className="outline-none bg-[#35383d] w-full px-4 py-2 rounded-md  focus:border-sky-500 focus:bg-[#343b4a] focus:ring-2 focus:ring-sky-500/30"
@@ -79,12 +79,20 @@ const Users = () => {
                                         <div className="w-10 h-10 rounded-full bg-[#2f4e83] flex items-center justify-center text-white font-medium cursor-default">
                                             {user.username.charAt(0)}
                                         </div>
-                                        <strong className="cursor-default">
+                                        <strong
+                                            className="cursor-default max-w-30 sm:max-w-none truncate"
+                                            title={user.username}
+                                        >
                                             {user.username}
                                         </strong>
                                     </div>
                                     <div className="flex items-center gap-4">
-                                        <p>{user.email}</p>
+                                        <p
+                                            className="max-w-30 sm:max-w-none truncate"
+                                            title={user.email}
+                                        >
+                                            {user.email}
+                                        </p>
                                         <FiMessageCircle
                                             className={`w-6 h-6 cursor-pointer ${startChatMutation.isPending ? 'text-gray-600' : ''}`}
                                             onClick={() => {
